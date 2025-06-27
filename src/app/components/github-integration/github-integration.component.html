@@ -1,5 +1,3 @@
-<p>github-integration works!</p>
-
 <!-- Top toolbar -->
 <mat-toolbar color="primary">
   <span>GitHub Integration</span>
@@ -58,12 +56,22 @@
       <mat-form-field appearance="fill" style="min-width: 200px;">
         <mat-label>Entity</mat-label>
         <mat-select [(ngModel)]="selectedEntity" (selectionChange)="onSelectEntity($event.value)">
-          @for (ent of entities; track ent) {
-            <mat-option [value]="ent">
-              {{ ent | titlecase }}
-            </mat-option>
+          @if (entities.length === 0) {
+            <mat-option disabled>No entities available</mat-option>
+          } @else {
+            @for (ent of entities; track ent) {
+              <mat-option [value]="ent">
+                {{ ent | titlecase }}
+              </mat-option>
+            }
           }
         </mat-select>
+      </mat-form-field>
+
+      <!-- Search Bar styled like the entity dropdown -->
+      <mat-form-field appearance="fill" style="min-width: 200px;">
+        <mat-label>Search</mat-label>
+        <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange($event)" placeholder="Search all columns" />
       </mat-form-field>
     </div>
   }
@@ -77,6 +85,7 @@
         [columnDefs]="columnDefs" 
         [defaultColDef]="defaultColDef"
         [rowData]="rowData"
+        [gridOptions]="gridOptions"
         [pagination]="true" 
         [paginationPageSize]="50"
         [animateRows]="true">
