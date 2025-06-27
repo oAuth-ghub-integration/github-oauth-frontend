@@ -1,1 +1,86 @@
 <p>github-integration works!</p>
+
+<!-- Top toolbar -->
+<mat-toolbar color="primary">
+  <span>GitHub Integration</span>
+  <!-- Status indicator on the right -->
+  <span class="spacer"></span>
+  @if (connected) {
+    <!-- Show connected status -->
+    <mat-icon style="color: lightgreen; vertical-align: middle;">check_circle</mat-icon>
+    <span>Connected as {{ username }}</span>
+  } @else {
+    <span style="opacity: 0.7;">Not Connected</span>
+  }
+</mat-toolbar>
+
+<div class="container" style="padding: 16px;">
+  <!-- Connection prompt / status card -->
+  @if (!connected) {
+    <mat-card style="margin-bottom: 16px; max-width: 400px;">
+      <mat-card-content>
+        <p>Connect your GitHub account to fetch and view data.</p>
+        <button mat-raised-button color="primary" (click)="connectGithub()">
+          <mat-icon>login</mat-icon> Connect to GitHub
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (connected) {
+    <mat-card style="margin-bottom: 16px; max-width: 600px;">
+      <mat-card-content>
+        <p style="margin: 0;">
+          ✅ You have connected your GitHub account <b>{{ username }}</b>.
+        </p>
+        <p style="margin: 4px 0 0 0; font-size: 0.9em; color: gray;">
+          Last sync: {{ lastSynced }}
+        </p>
+        <button mat-button color="warn" (click)="removeIntegration()">
+          <mat-icon>link_off</mat-icon> Remove Integration
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Controls for selecting data entity (visible only if connected) -->
+  @if (connected) {
+    <div class="controls" style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
+      <!-- Integration selector (currently only GitHub) -->
+      <mat-form-field appearance="fill" style="width: 150px;">
+        <mat-label>Integration</mat-label>
+        <mat-select [(ngModel)]="selectedIntegration" disabled>
+          <mat-option value="github">GitHub</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Entity selector -->
+      <mat-form-field appearance="fill" style="min-width: 200px;">
+        <mat-label>Entity</mat-label>
+        <mat-select [(ngModel)]="selectedEntity" (selectionChange)="onSelectEntity($event.value)">
+          @for (ent of entities; track ent) {
+            <mat-option [value]="ent">
+              {{ ent | titlecase }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  }
+
+  <!-- AG Grid Table -->
+  @if (connected) {
+    <div class="ag-grid-container">
+      <ag-grid-angular 
+        class="ag-theme-alpine" 
+        style="width: 100%; height: 500px;" 
+        [columnDefs]="columnDefs" 
+        [defaultColDef]="defaultColDef"
+        [rowData]="rowData"
+        [pagination]="true" 
+        [paginationPageSize]="50"
+        [animateRows]="true">
+      </ag-grid-angular>
+    </div>
+  }
+</div>
