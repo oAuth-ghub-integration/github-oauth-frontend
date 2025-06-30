@@ -34,7 +34,7 @@
         <p style="margin: 4px 0 0 0; font-size: 0.9em; color: gray;">
           Last sync: {{ lastSynced }}
         </p>
-        <button mat-button color="warn" (click)="removeIntegration()">
+        <button mat-button color="warn" (click)="removeIntegration()" [disabled]="!syncStatus.allSynced">
           <mat-icon>link_off</mat-icon> Remove Integration
         </button>
       </mat-card-content>
@@ -71,10 +71,6 @@
           <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
             <span style="width: 120px;">Issues</span>
             <mat-icon color="{{syncStatus.issues ? 'primary' : 'warn'}}">{{ syncStatus.issues ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
-          </li>
-          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-            <span style="width: 120px;">Changelogs</span>
-            <mat-icon color="{{syncStatus.changelogs ? 'primary' : 'warn'}}">{{ syncStatus.changelogs ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
           </li>
           <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: bold;">
             <span style="width: 120px;">All Synced</span>

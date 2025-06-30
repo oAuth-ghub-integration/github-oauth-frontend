@@ -47,7 +47,7 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
   username?: string;
   lastSynced?: string;
   readonly entities: string[] = [
-    'organizations', 'repos', 'commits', 'pulls', 'issues', 'changelogs', 'users'
+    'organizations', 'repos', 'commits', 'pulls', 'issues', 'users'
   ];
   selectedEntity = '';
   selectedIntegration = 'github';
