@@ -130,6 +130,7 @@
         class="ag-theme-alpine" 
         style="width: 100%; height: 500px;" 
         [columnDefs]="columnDefs" 
+        [rowData]="rowData"
         [defaultColDef]="defaultColDef"
         [rowData]="rowData"
         [gridOptions]="gridOptions"
@@ -138,5 +139,30 @@
         [animateRows]="true">
       </ag-grid-angular>
     </div>
+    <!-- Custom Pagination Bar -->
+    @if (totalRecords > pageSize) {
+      <nav class="custom-pagination" style="display: flex; justify-content: center; align-items: center; margin-top: 12px; gap: 4px; flex-wrap: wrap;">
+        <button mat-icon-button color="primary" (click)="goToPage(1)" [disabled]="currentPage === 1" aria-label="First page">
+          <mat-icon>first_page</mat-icon>
+        </button>
+        <button mat-icon-button color="primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Previous page">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        @for (page of visiblePageNumbers; track page) {
+          @if (page === 'ellipsis') {
+            <button mat-icon-button disabled style="pointer-events: none; min-width: 32px;">...</button>
+          } @else {
+            <button mat-flat-button [color]="currentPage === page ? 'accent' : undefined" (click)="goToPage(page)">{{ page }}</button>
+          }
+        }
+        <button mat-icon-button color="primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === Math.ceil(totalRecords / pageSize)" aria-label="Next page">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+        <button mat-icon-button color="primary" (click)="goToPage(Math.ceil(totalRecords / pageSize))" [disabled]="currentPage === Math.ceil(totalRecords / pageSize)" aria-label="Last page">
+          <mat-icon>last_page</mat-icon>
+        </button>
+        <span style="margin-left: 12px; color: gray; font-size: 0.9em;">Page {{ currentPage }} of {{ Math.ceil(totalRecords / pageSize) }} ({{ totalRecords }} records)</span>
+      </nav>
+    }
   }
 </div>

@@ -71,6 +71,41 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
   syncPollingSub?: Subscription;
 
   pageSize = 50;
+  currentPage = 1;
+  totalRecords = 0;
+  Math = Math; // Make Math available in template
+
+  get pageNumbers(): number[] {
+    const totalPages = Math.ceil(this.totalRecords / this.pageSize);
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  get visiblePageNumbers(): (number | 'ellipsis')[] {
+    const totalPages = Math.ceil(this.totalRecords / this.pageSize);
+    const pages: (number | 'ellipsis')[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (this.currentPage <= 4) {
+        for (let i = 1; i <= 5; i++) pages.push(i);
+        pages.push('ellipsis', totalPages);
+      } else if (this.currentPage >= totalPages - 3) {
+        pages.push(1, 'ellipsis');
+        for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1, 'ellipsis');
+        for (let i = this.currentPage - 1; i <= this.currentPage + 1; i++) pages.push(i);
+        pages.push('ellipsis', totalPages);
+      }
+    }
+    return pages;
+  }
+
+  goToPage(page: number): void {
+    const totalPages = Math.ceil(this.totalRecords / this.pageSize);
+    if (page < 1 || page > totalPages || page === this.currentPage) return;
+    this.loadData(page);
+  }
 
   constructor(private readonly gitService: GithubIntegrationService) {}
 
@@ -134,6 +169,8 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
         this.selectedEntity = '';
         this.rowData = [];
         this.columnDefs = [];
+        this.currentPage = 1;
+        this.totalRecords = 0;
         this.syncStatus = {};
         this.syncPollingSub?.unsubscribe();
       },
@@ -143,28 +180,50 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSelectEntity(entity: string): void {
-    if (!entity) {
-      return;
-    }
-    this.gitService.getData(entity).subscribe({
-      next: dataArray => {
-        this.selectedEntity = entity;
-        if (dataArray && dataArray?.data?.length > 0) {
-          const firstObj = dataArray?.data[0];
+  loadData(page: number = 1): void {
+    if (!this.selectedEntity) return;
+    
+    this.currentPage = page;
+    this.gitService.getData(this.selectedEntity, page, this.pageSize).subscribe({
+      next: response => {
+        console.log(`API response for ${this.selectedEntity} page ${page}:`, response);
+        this.rowData = response.data || [];
+        this.totalRecords = response.total || 0;
+        
+        // Always set column definitions based on new data
+        if (this.rowData.length) {
+          const firstObj = this.rowData[0];
           this.columnDefs = Object.keys(firstObj).map(key => ({ field: key }));
         } else {
           this.columnDefs = [];
         }
-        this.rowData = dataArray?.data || [];
+        
+        // Apply search filter if any
         this.onSearchChange(this.searchText);
       },
       error: error => {
-        console.error(`Failed to fetch ${entity} data`, error);
+        console.error(`Failed to fetch ${this.selectedEntity} data for page ${page}`, error);
         this.rowData = [];
+        this.totalRecords = 0;
         this.columnDefs = [];
       }
     });
+  }
+
+  onSelectEntity(entity: string): void {
+    if (!entity) {
+      return;
+    }
+    this.selectedEntity = entity;
+    this.currentPage = 1;
+    this.loadData(1);
+  }
+
+  onPageChanged(event: any): void {
+    const newPage = event.api.paginationGetCurrentPage() + 1; // AG Grid uses 0-based indexing
+    if (newPage !== this.currentPage) {
+      this.loadData(newPage);
+    }
   }
 
   onSearchChange(searchValue: string) {
