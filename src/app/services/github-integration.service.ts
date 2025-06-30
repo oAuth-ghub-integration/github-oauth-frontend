@@ -24,4 +24,9 @@ export class GithubIntegrationService {
   getData(entity: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_BASE}/${entity}`, { withCredentials: true });
   }
+
+  // Poll sync status
+  getSyncStatus(): Observable<any> {
+    return this.http.get<any>(`${this.API_BASE}/sync-status`, { withCredentials: true });
+  }
 }

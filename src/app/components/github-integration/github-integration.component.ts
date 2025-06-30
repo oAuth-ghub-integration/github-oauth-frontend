@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 // AG Grid
 import { AgGridModule } from 'ag-grid-angular';
@@ -20,6 +21,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 // Services
 import { GithubIntegrationService } from '../../services/github-integration.service';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-github-integration',
@@ -34,12 +36,13 @@ import { GithubIntegrationService } from '../../services/github-integration.serv
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatProgressBarModule,
     AgGridModule
   ],
   templateUrl: './github-integration.component.html',
   styleUrl: './github-integration.component.scss'
 })
-export class GithubIntegrationComponent implements OnInit {
+export class GithubIntegrationComponent implements OnInit, OnDestroy {
   connected = false;
   username?: string;
   lastSynced?: string;
@@ -63,21 +66,52 @@ export class GithubIntegrationComponent implements OnInit {
     theme: 'legacy' as const
   };
 
+  // Sync status polling
+  syncStatus: any = {};
+  syncPollingSub?: Subscription;
+
   constructor(private readonly gitService: GithubIntegrationService) {}
 
   ngOnInit(): void {
     this.gitService.getStatus().subscribe({
       next: status => {
         this.connected = status.connected;
-        if (status.connected) {
+        if (this.connected) {
           this.username = status.username;
           if (status.lastSynced) {
             this.lastSynced = new Date(status.lastSynced).toLocaleString();
           }
+          this.pollSyncStatus();
+        } else {
+          this.syncStatus = {};
+          this.syncPollingSub?.unsubscribe();
         }
       },
       error: error => {
         console.error('Failed to get integration status', error);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncPollingSub?.unsubscribe();
+  }
+
+  pollSyncStatus(): void {
+    this.fetchSyncStatus();
+    this.syncPollingSub = interval(3000).subscribe(() => this.fetchSyncStatus());
+  }
+
+  fetchSyncStatus(): void {
+    this.gitService.getSyncStatus().subscribe({
+      next: status => {
+        this.syncStatus = status;
+        if (status.allSynced && this.syncPollingSub) {
+          this.syncPollingSub.unsubscribe();
+        }
+      },
+      error: err => {
+        console.error('Failed to fetch sync status', err);
       }
     });
   }
@@ -98,6 +132,8 @@ export class GithubIntegrationComponent implements OnInit {
         this.selectedEntity = '';
         this.rowData = [];
         this.columnDefs = [];
+        this.syncStatus = {};
+        this.syncPollingSub?.unsubscribe();
       },
       error: error => {
         console.error('Failed to remove integration', error);
@@ -119,7 +155,6 @@ export class GithubIntegrationComponent implements OnInit {
           this.columnDefs = [];
         }
         this.rowData = dataArray;
-        // Reset search when new data is loaded
         this.onSearchChange(this.searchText);
       },
       error: error => {

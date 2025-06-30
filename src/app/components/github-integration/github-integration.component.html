@@ -41,6 +41,53 @@
     </mat-card>
   }
 
+  <!-- Sync Progress Card -->
+  @if (syncStatus && connected) {
+    <mat-card style="margin-bottom: 16px; max-width: 600px;">
+      <mat-card-content>
+        <h3 style="margin-top: 0;">Sync Progress</h3>
+        <mat-progress-bar *ngIf="!syncStatus.allSynced" mode="indeterminate" color="primary"></mat-progress-bar>
+        <ul style="list-style: none; padding: 0; margin: 16px 0 0 0;">
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="width: 120px;">Users</span>
+            <mat-icon color="{{syncStatus.users ? 'primary' : 'warn'}}">{{ syncStatus.users ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="width: 120px;">Organizations</span>
+            <mat-icon color="{{syncStatus.organizations ? 'primary' : 'warn'}}">{{ syncStatus.organizations ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="width: 120px;">Repos</span>
+            <mat-icon color="{{syncStatus.repos ? 'primary' : 'warn'}}">{{ syncStatus.repos ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="width: 120px;">Commits</span>
+            <mat-icon color="{{syncStatus.commits ? 'primary' : 'warn'}}">{{ syncStatus.commits ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="width: 120px;">Pulls</span>
+            <mat-icon color="{{syncStatus.pulls ? 'primary' : 'warn'}}">{{ syncStatus.pulls ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="width: 120px;">Issues</span>
+            <mat-icon color="{{syncStatus.issues ? 'primary' : 'warn'}}">{{ syncStatus.issues ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="width: 120px;">Changelogs</span>
+            <mat-icon color="{{syncStatus.changelogs ? 'primary' : 'warn'}}">{{ syncStatus.changelogs ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: bold;">
+            <span style="width: 120px;">All Synced</span>
+            <mat-icon color="{{syncStatus.allSynced ? 'primary' : 'warn'}}">{{ syncStatus.allSynced ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          </li>
+        </ul>
+        <div *ngIf="syncStatus.allSynced" style="color: green; margin-top: 8px; font-weight: 500;">
+          <mat-icon color="primary">check_circle</mat-icon> All tables have been synced!
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
   <!-- Controls for selecting data entity (visible only if connected) -->
   @if (connected) {
     <div class="controls" style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
