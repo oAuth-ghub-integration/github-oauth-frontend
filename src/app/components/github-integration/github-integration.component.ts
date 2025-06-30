@@ -104,7 +104,7 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
   goToPage(page: number): void {
     const totalPages = Math.ceil(this.totalRecords / this.pageSize);
     if (page < 1 || page > totalPages || page === this.currentPage) return;
-    this.loadData(page);
+    this.loadData(page, this.searchText);
   }
 
   constructor(private readonly gitService: GithubIntegrationService) {}
@@ -180,11 +180,11 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadData(page: number = 1): void {
+  loadData(page: number = 1, searchText: string = this.searchText): void {
     if (!this.selectedEntity) return;
     
     this.currentPage = page;
-    this.gitService.getData(this.selectedEntity, page, this.pageSize).subscribe({
+    this.gitService.getData(this.selectedEntity, page, this.pageSize, searchText).subscribe({
       next: response => {
         console.log(`API response for ${this.selectedEntity} page ${page}:`, response);
         this.rowData = response.data || [];
@@ -197,9 +197,6 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
         } else {
           this.columnDefs = [];
         }
-        
-        // Apply search filter if any
-        this.onSearchChange(this.searchText);
       },
       error: error => {
         console.error(`Failed to fetch ${this.selectedEntity} data for page ${page}`, error);
@@ -216,19 +213,20 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
     }
     this.selectedEntity = entity;
     this.currentPage = 1;
-    this.loadData(1);
+    this.loadData(1, this.searchText);
   }
 
   onPageChanged(event: any): void {
     const newPage = event.api.paginationGetCurrentPage() + 1; // AG Grid uses 0-based indexing
     if (newPage !== this.currentPage) {
-      this.loadData(newPage);
+      this.loadData(newPage, this.searchText);
     }
   }
 
   onSearchChange(searchValue: string) {
     this.searchText = searchValue;
-    this.gridApi?.setQuickFilter(this.searchText);
+    this.currentPage = 1;
+    this.loadData(1, this.searchText);
   }
 
   onGridReady(params: any) {
