@@ -21,8 +21,11 @@ export class GithubIntegrationService {
     return this.http.post(`${this.API_BASE}/remove`, {}, { withCredentials: true });
   }
 
-  getData(entity: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_BASE}/${entity}`, { withCredentials: true });
+  getData(entity: string, page: number = 1, pageSize: number = 50): Observable<any> {
+    return this.http.get<any>(
+      `${this.API_BASE}/${entity}?page=${page}&pageSize=${pageSize}`,
+      { withCredentials: true }
+    );
   }
 
   // Poll sync status

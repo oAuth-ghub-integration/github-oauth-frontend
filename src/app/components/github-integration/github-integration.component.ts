@@ -70,6 +70,8 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
   syncStatus: any = {};
   syncPollingSub?: Subscription;
 
+  pageSize = 50;
+
   constructor(private readonly gitService: GithubIntegrationService) {}
 
   ngOnInit(): void {
@@ -148,13 +150,13 @@ export class GithubIntegrationComponent implements OnInit, OnDestroy {
     this.gitService.getData(entity).subscribe({
       next: dataArray => {
         this.selectedEntity = entity;
-        if (dataArray && dataArray.length > 0) {
-          const firstObj = dataArray[0];
+        if (dataArray && dataArray?.data?.length > 0) {
+          const firstObj = dataArray?.data[0];
           this.columnDefs = Object.keys(firstObj).map(key => ({ field: key }));
         } else {
           this.columnDefs = [];
         }
-        this.rowData = dataArray;
+        this.rowData = dataArray?.data || [];
         this.onSearchChange(this.searchText);
       },
       error: error => {
